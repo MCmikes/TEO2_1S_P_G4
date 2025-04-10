@@ -10,6 +10,7 @@ from PyQt6.QtGui import QFont, QColor, QPainter, QPainterPath
 class CalculadoraT(QWidget):
     def __init__(self):
         super().__init__()
+        self.modo_avanzado = False
         self.configuracion_ui()
 
     def configuracion_ui(self):
@@ -83,6 +84,16 @@ class CalculadoraT(QWidget):
         btn_cerrar.move(335, 15)
 
 
+        # Botones avanzados
+        self.botones_avanzados = [
+            ('√', self.raiz_cuadrada),
+            ('x^y', self.potencia),
+            ('x!', self.factorial),
+            ('ln', self.logaritmo)
+        ]
+        self.config_botones_avanzados(layout)
+
+
     def crear_botones(self, layout, botones):
 
         # Estilo base para los botones
@@ -152,12 +163,64 @@ class CalculadoraT(QWidget):
                 elif texto == '⌫':
                     print("para eliminar caracter por caracter")
                 elif texto == '☇':
-                    print("Cambiar a calculadora avanzada")
+                    btn.clicked.connect(self.cambiar_modo)
                 elif texto == '=':
-                    print("para calcular el resultado")
+                    btn.clicked.connect(self.calcular_resultados)
                 elif texto not in ['/', '*', '-', '+']:
                     btn.clicked.connect(lambda _, t=texto: self.pantalla.setText(self.pantalla.text() + t))
    
+    
+    def config_botones_avanzados(self, layout):
+        self.adv_btns = []
+        for i, (texto, funcion) in enumerate(self.botones_avanzados):
+            btn = QPushButton(texto)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: rgba(120, 80, 200, 220);
+                    color: white;
+                    border-radius: 10px;
+                    padding: 10px;
+                    font-size: 16px;
+                }
+                QPushButton:hover {
+                    background-color: rgba(140, 100, 220, 240);
+                }
+            """)
+            btn.setVisible(self.modo_avanzado)
+            btn.clicked.connect(funcion)
+            layout.addWidget(btn, 6 + i//2, i%2 * 2, 1, 2)
+            self.adv_btns.append(btn)
+    
+    def cambiar_modo(self):
+        self.modo_avanzado = not self.modo_avanzado
+        for btn in self.adv_btns:
+            btn.setVisible(self.modo_avanzado)
+        self.setFixedSize(380, 750 if self.modo_avanzado else 650)
+
+    def calcular_resultados(self):
+        print("suma, resta, etc")
+    
+    def raiz_cuadrada(self):
+        print("raiz")
+    
+    def potencia(self):
+        print("potencia")
+    
+    def factorial(self):
+        print("factorial")
+    
+    def logaritmo(self):
+        print("logaritmo")
+
+    # Para mover la calculadora 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.drag_pos = event.globalPosition().toPoint()
+    
+    def mouseMoveEvent(self, event):
+        if hasattr(self, 'drag_pos'):
+            self.move(self.pos() + event.globalPosition().toPoint() - self.drag_pos)
+            self.drag_pos = event.globalPosition().toPoint()
             
 def main():
     app = QApplication(sys.argv)
