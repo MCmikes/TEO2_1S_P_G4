@@ -160,8 +160,10 @@ class CalculadoraT(QWidget):
                 # Conectar funciones
                 if texto == 'C':
                     print("para limpiar la pantalla")
+                    btn.clicked.connect(self.borrar_todo)
                 elif texto == '⌫':
                     print("para eliminar caracter por caracter")
+                    btn.clicked.connect(self.borrar_ultimo)
                 elif texto == '☇':
                     btn.clicked.connect(self.cambiar_modo)
                 elif texto == '=':
@@ -221,6 +223,17 @@ class CalculadoraT(QWidget):
         if hasattr(self, 'drag_pos'):
             self.move(self.pos() + event.globalPosition().toPoint() - self.drag_pos)
             self.drag_pos = event.globalPosition().toPoint()
+            
+    def borrar_ultimo(self):
+        texto_actual = self.pantalla.text()
+        self.pantalla.setText(texto_actual[:-1])
+    
+    def borrar_todo(self):
+        self.pantalla.clear()
+    
+    
+ 
+
             
 def main():
     app = QApplication(sys.argv)
