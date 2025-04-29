@@ -170,6 +170,8 @@ class CalculadoraT(QWidget):
                     btn.clicked.connect(self.calcular_resultados)
                 elif texto not in ['/', '*', '-', '+']:
                     btn.clicked.connect(lambda _, t=texto: self.pantalla.setText(self.pantalla.text() + t))
+                elif texto not in ['☇']:
+                    btn.clicked.connect(lambda _, t=texto: self.pantalla.setText(self.pantalla.text() + t))
    
     
     def config_botones_avanzados(self, layout):
@@ -200,7 +202,14 @@ class CalculadoraT(QWidget):
         self.setFixedSize(380, 750 if self.modo_avanzado else 650)
 
     def calcular_resultados(self):
-        print("suma, resta, etc")
+        try:
+            expresion = self.pantalla.text()
+            resultado = eval(expresion)
+            self.pantalla.setText(str(resultado))
+        except ZeroDivisionError:
+            self.pantalla.setText("Error: División por 0")
+        except Exception as e:
+            self.pantalla.setText("Error")
     
     def raiz_cuadrada(self):
         print("raiz")
