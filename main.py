@@ -204,24 +204,78 @@ class CalculadoraT(QWidget):
     def calcular_resultados(self):
         try:
             expresion = self.pantalla.text()
-            resultado = eval(expresion)
-            self.pantalla.setText(str(resultado))
+            
+            # Verificar si hay operaciones avanzadas
+            if any(op in expresion for op in ['√', '!', 'ln', '^']):
+                expresion = self._convertir_operaciones_avanzadas(expresion)
+            
+            # Calcular resultado
+            math_functions = {
+                'sqrt': math.sqrt,
+                'factorial': math.factorial,
+                'log': math.log,
+                'int': int,
+                'float': float,
+                '__builtins__': None  # Por seguridad
+            }
+            
+            # Calcular resultado con acceso a las funciones matemáticas
+            resultado = eval(expresion, math_functions)
+            # Mostrar resultado como entero si no tiene decimales
+            if isinstance(resultado, float) and resultado.is_integer():
+                self.pantalla.setText(str(int(resultado)))
+            else:
+                self.pantalla.setText(str(resultado))
+                
         except ZeroDivisionError:
-            self.pantalla.setText("Error: División por 0")
+            self.pantalla.setText("Error: Div/0")
         except Exception as e:
+            print(f"Error: {e}")  # Para depuración
             self.pantalla.setText("Error")
-    
+
     def raiz_cuadrada(self):
-        print("raiz")
-    
+        texto_actual = self.pantalla.text()
+        # Permite √ en cualquier posición válida
+        self.pantalla.setText(texto_actual + "√")
+
     def potencia(self):
-        print("potencia")
-    
+        texto_actual = self.pantalla.text()
+        # Si hay un número antes, agregamos ^
+        if texto_actual and (texto_actual[-1].isdigit() or texto_actual[-1] == ')'):
+            self.pantalla.setText(texto_actual + "^")
+        else:
+            self.pantalla.setText(texto_actual + "^")
+
     def factorial(self):
-        print("factorial")
-    
+        texto_actual = self.pantalla.text()
+        # Permite ! después de números
+        if texto_actual and texto_actual[-1].isdigit():
+            self.pantalla.setText(texto_actual + "!")
+
     def logaritmo(self):
-        print("logaritmo")
+        texto_actual = self.pantalla.text()
+        # Permite ln en cualquier posición
+        self.pantalla.setText(texto_actual + "ln")
+
+    def _convertir_operaciones_avanzadas(self, expr):
+        import re
+        
+        # Convertir expresiones paso a paso
+        expr = expr.replace(' ', '')  # Eliminar espacios
+        
+        # 1. Procesar raíces (√25 → sqrt(25))
+        expr = re.sub(r'√(\d+\.?\d*)', r'sqrt(\1)', expr)
+        
+        # 2. Procesar factoriales (5! → factorial(5))
+        expr = re.sub(r'(\d+\.?\d*)!', r'factorial(int(\1))', expr)
+        
+        # 3. Procesar logaritmos (ln100 → log(100))
+        expr = re.sub(r'ln(\d+\.?\d*)', r'log(\1)', expr)
+        
+        # 4. Procesar potencias (2^3 → 2**3)
+        expr = expr.replace('^', '**')
+        
+        return expr
 
     # Para mover la calculadora 
     def mousePressEvent(self, event):
